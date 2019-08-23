@@ -29,13 +29,14 @@
         </div>
         </form>
     </div>
+    <pre id="signatureHelper"></pre>
     <script>
         function signatureHelper() {
             var s1 = $('#sender').val();
             var s2 = $('#to').val();
             var s3 = $('#value').val();
             var s4 = $('#nonce').val();
-            alert(s1 + ' ' + s2 + ' ' + s3 + ' ' + s4);
+            document.getElementById('signatureHelper').innerText = s1 + ' ' + s2 + ' ' + s3 + ' ' + s4;
         }
     </script>
 </body>

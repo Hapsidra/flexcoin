@@ -1,3 +1,7 @@
+from hashlib import sha256
+import json
+
+
 class Transaction:
     def __init__(self, sender, to, value, nonce, signature):
         self.sender = sender
@@ -8,12 +12,15 @@ class Transaction:
 
 
 class Block:
-    def __init__(self, transactions, nonce=0):
+    def __init__(self, miner, previous_hash, transactions, length, nonce=0):
+        self.miner = miner
+        self.previous_hash = previous_hash
         self.transactions = transactions
+        self.length = length
         self.nonce = nonce
 
-    def mine(self):
-        print(type(self.__dict__))
+    def get_hash(self):
+        return sha256(json.dumps(self.__dict__).encode()).hexdigest()
 
 
 class State:
