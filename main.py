@@ -3,12 +3,49 @@ import requests
 from wallet import verify, get_private_key, public_key_to_pem, sign
 from models import *
 import threading
+DIFFICULTY = 5
+MINER_REWARD = 25
+
+
+class Server(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+
+    def run(self) -> None:
+        create_server().run(my_host)
+
+
+class Miner(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+
+    def run(self) -> None:
+        while True:
+            current_block = chain[current_block_hash]
+            block = Block(my_address, current_block_hash, transactions_pool, current_block.length + 1)
+            mine(block)
+            add_block(block)
+
+
+class JSONEncoder(json.JSONEncoder):
+    def encode(self, o):
+        if isinstance(o, Block):
+            result = o.__dict__
+            return result
+        result = {}
+        for e in o:
+            result[e] = json.dumps(o[e].__dict__)
+        return json.dumps(result)
+
+
 my_host = open('host.txt', 'r').readline().strip()
 transactions_pool: [Transaction] = []
 nodes: [str] = ['192.168.0.1', '192.168.0.2']
 chain = dict()
-DIFFICULTY = 5
-MINER_REWARD = 25
+jsonEncoder = JSONEncoder()
+private_key = get_private_key()
+my_address = public_key_to_pem(private_key)
+current_block_hash = None
 
 
 def is_valid_transaction(transaction: Transaction) -> bool:
@@ -113,7 +150,6 @@ def create_server():
         state = get_state(address)
         return jsonify(state.__dict__)
 
-
     @app.route('/chain')
     def get_chain():
         @after_this_request
@@ -125,16 +161,7 @@ def create_server():
     @app.route('/new_block', methods=['POST'])
     def new_block():
         print('req:', req)
-        data = json.loads(req.data)
-        miner = data['miner']
-        previous_hash = data['previous_hash']
-        transactions_raw = data['transactions']
-        transactions = []
-        for raw_transaction in transactions_raw:
-            transactions.append(Transaction(raw_transaction['sender'], raw_transaction['to'], int(raw_transaction['value']), int(raw_transaction['nonce']), raw_transaction['signature']))
-        length = int(data['length'])
-        nonce = int(data['nonce'])
-        block = Block(miner, previous_hash, transactions, length, nonce)
+        block = restore_block(json.loads(req.data))
         add_block(block)
         return 'ok'
 
@@ -151,35 +178,6 @@ def create_server():
     return app
 
 
-class Server(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-
-    def run(self) -> None:
-        create_server().run(my_host)
-
-
-class Miner(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-
-    def run(self) -> None:
-        while True:
-            current_block = chain[current_block_hash]
-            block = Block(my_address, current_block_hash, transactions_pool, current_block.length + 1)
-            mine(block)
-            add_block(block)
-
-
-server = Server()
-server.start()
-
-private_key = get_private_key()
-my_address = public_key_to_pem(private_key)
-
-genesis = Block('', '', [], 1, 25814)
-
-
 def mine(block: Block):
     while True:
         h = block.get_hash()
@@ -188,30 +186,42 @@ def mine(block: Block):
         block.nonce += 1
 
 
-# mine(genesis)
-chain[genesis.get_hash()] = genesis
-current_block_hash = genesis.get_hash()
-
-
-class JSONEncoder(json.JSONEncoder):
-    def encode(self, o):
-        if isinstance(o, Block):
-            result = o.__dict__
-            return result
-        result = {}
-        for e in o:
-            result[e] = json.dumps(o[e].__dict__)
-        return json.dumps(result)
-
-
-jsonEncoder = JSONEncoder()
-j = jsonEncoder.encode(chain)
-print(j)
-e = json.loads(j)
-print(e)
+def restore_block(data):
+    miner = data['miner']
+    previous_hash = data['previous_hash']
+    transactions_raw = data['transactions']
+    transactions = []
+    for raw_transaction in transactions_raw:
+        transactions.append(Transaction(raw_transaction['sender'], raw_transaction['to'], int(raw_transaction['value']),
+                                        int(raw_transaction['nonce']), raw_transaction['signature']))
+    length = int(data['length'])
+    nonce = int(data['nonce'])
+    return Block(miner, previous_hash, transactions, length, nonce)
 
 
 def main():
+    server = Server()
+    server.start()
+    global current_block_hash
+
+    for node in nodes:
+        if node != my_host:
+            try:
+                resp = requests.get('http://' + node + ':5000/chain')
+                if resp.ok:
+                    chain_json = resp.json()
+                    for block_hash in chain_json:
+                        block_json = json.loads(chain_json[block_hash])
+                        block = restore_block(block_json)
+                        chain[block_hash] = block
+                        if current_block_hash is None or block.length > chain[current_block_hash].length:
+                            current_block_hash = block.get_hash()
+            except:
+                print('node ' + node + ' is unavailable')
+    if len(chain) == 0:
+        genesis = Block('', '', [], 1, 25814)
+        chain[genesis.get_hash()] = genesis
+        current_block_hash = genesis.get_hash()
     while True:
         cmd = input()
         if cmd == 'sign':
