@@ -58,13 +58,22 @@ def hex_to_bytes(s):
     return bytes(bytearray.fromhex(s))
 
 
-def get_public_key(private_key):
+def public_key_to_pem(private_key):
     public_key = private_key.public_key()
     pem = public_key.public_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PublicFormat.SubjectPublicKeyInfo
     )
     return bytes_to_hex(pem)
+
+
+def pem_to_public_key(_pem):
+    pem = hex_to_bytes(_pem)
+    public_key = serialization.load_pem_public_key(
+        pem,
+        backend=default_backend()
+    )
+    return public_key
 
 
 def sign(private_key, _message):
