@@ -5,55 +5,13 @@
     <title>Blocks View</title>
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/style.css">
-    <script src="js/jquery-3.3.1.slim.min.js"></script>
+    <script src="js/jquery-3.2.1.min.js"></script>
     <script src="js/popper.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
 </head>
 <body>
     <div class="container mt-5">
-        <h1>FlexScan: Transactions</h1>
-        <h2>Block 0</h2>
-        <div class="card">
-            <div class="card-body">
-                <p><b>From:</b> asdhasjdkasdasdasjd</p>
-                <p><b>To:</b> askdjasdasdhaskjhdjka</p>
-                <p><b>Value:</b> 0.1 FLX</p>
-                <p><b>Nonce:</b> 2</p>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-body">
-                <p><b>From:</b> asdhasjdkasdasdasjd</p>
-                <p><b>To:</b> askdjasdasdhaskjhdjka</p>
-                <p><b>Value:</b> 0.1 FLX</p>
-                <p><b>Nonce:</b> 2</p>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-body">
-                <p><b>From:</b> asdhasjdkasdasdasjd</p>
-                <p><b>To:</b> askdjasdasdhaskjhdjka</p>
-                <p><b>Value:</b> 0.1 FLX</p>
-                <p><b>Nonce:</b> 2</p>
-            </div>
-        </div>
-        <h2 class="mt-5">Block 1</h2>
-        <div class="card">
-            <div class="card-body">
-                <p><b>From:</b> asdhasjdkasdasdasjd</p>
-                <p><b>To:</b> askdjasdasdhaskjhdjka</p>
-                <p><b>Value:</b> 0.1 FLX</p>
-                <p><b>Nonce:</b> 2</p>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-body">
-                <p><b>From:</b> asdhasjdkasdasdasjd</p>
-                <p><b>To:</b> askdjasdasdhaskjhdjka</p>
-                <p><b>Value:</b> 0.1 FLX</p>
-                <p><b>Nonce:</b> 2</p>
-            </div>
-        </div>
+        <h1>FlexScan: Chain</h1>
         <div class="card">
             <div class="card-body">
                 <p><b>From:</b> asdhasjdkasdasdasjd</p>
@@ -63,5 +21,17 @@
             </div>
         </div>
     </div>
+<script>
+   $.ajax({
+        url: "http://192.168.0.2:5000/chain",
+        }).done(function(data) {
+            var ddata = JSON.parse(data);
+            for (let [key, value] of Object.entries(ddata)) {
+                console.log(key);
+                console.log(value);
+<!--                console.log(`${key}: ${value}`);-->
+            }
+    });
+</script>
 </body>
 </html>

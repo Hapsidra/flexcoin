@@ -116,6 +116,10 @@ def create_server():
 
     @app.route('/chain')
     def get_chain():
+        @after_this_request
+        def add_header(response):
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            return response
         return jsonEncoder.encode(chain)
 
     @app.route('/new_block', methods=['POST'])
