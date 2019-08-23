@@ -64,15 +64,11 @@ def add_block(block):
         transactions_pool.clear()
         chain[block.get_hash()] = block
         current_block_hash = block.get_hash()
-        data = block.__dict__
-        data['transactions'] = []
-        for t in block.transactions:
-            data['transactions'].append(t.__dict__)
-        print('new block:', data)
+        print('new block:', jsonEncoder.encode(block))
         for node in nodes:
             if node != my_host:
                 try:
-                    requests.post('http://' + node + ':5000' + '/new_block', data=data)
+                    requests.post('http://' + node + ':5000' + '/new_block', data=jsonEncoder.encode(block))
                 except:
                     print('node', node, 'is unavailable')
     else:
@@ -127,19 +123,18 @@ def create_server():
         print('req:', req)
         form = req.form
         print(form)
-        miner = form['miner']
-        previous_hash = form['previous_hash']
-        transactions_raw = []
-        if 'transactions' in form['transactions']:
-            transactions_raw = json.loads(form['transactions'])
-        print(transactions_raw)
-        transactions = []
-        for raw_transaction in transactions_raw:
-            transactions.append(Transaction(raw_transaction['sender'], raw_transaction['to'], int(raw_transaction['value']), int(raw_transaction['nonce']), raw_transaction['signature']))
-        length = int(form['length'])
-        nonce = int(form['nonce'])
-        block = Block(miner, previous_hash, transactions, length, nonce)
-        add_block(block)
+        print(req.data)
+        # miner = form['miner']
+        # previous_hash = form['previous_hash']
+        # transactions_raw = json.loads(form['transactions'])
+        # print(transactions_raw)
+        # transactions = []
+        # for raw_transaction in transactions_raw:
+        #     transactions.append(Transaction(raw_transaction['sender'], raw_transaction['to'], int(raw_transaction['value']), int(raw_transaction['nonce']), raw_transaction['signature']))
+        # length = int(form['length'])
+        # nonce = int(form['nonce'])
+        # block = Block(miner, previous_hash, transactions, length, nonce)
+        # add_block(block)
         return 'ok'
 
     @app.route('/new_transaction', methods=['POST'])
@@ -199,6 +194,9 @@ current_block_hash = genesis.get_hash()
 
 class JSONEncoder(json.JSONEncoder):
     def encode(self, o):
+        if isinstance(o, Block):
+            result = o.__dict__
+            return result
         result = {}
         for e in o:
             result[e] = json.dumps(o[e].__dict__)
