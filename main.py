@@ -113,20 +113,17 @@ def create_server():
     @app.route('/new_block', methods=['POST'])
     def new_block():
         print('req:', req)
-        form = req.form
-        print(form)
-        print(req.data)
-        # miner = form['miner']
-        # previous_hash = form['previous_hash']
-        # transactions_raw = json.loads(form['transactions'])
-        # print(transactions_raw)
-        # transactions = []
-        # for raw_transaction in transactions_raw:
-        #     transactions.append(Transaction(raw_transaction['sender'], raw_transaction['to'], int(raw_transaction['value']), int(raw_transaction['nonce']), raw_transaction['signature']))
-        # length = int(form['length'])
-        # nonce = int(form['nonce'])
-        # block = Block(miner, previous_hash, transactions, length, nonce)
-        # add_block(block)
+        data = json.loads(req.data)
+        miner = data['miner']
+        previous_hash = data['previous_hash']
+        transactions_raw = data['transactions']
+        transactions = []
+        for raw_transaction in transactions_raw:
+            transactions.append(Transaction(raw_transaction['sender'], raw_transaction['to'], int(raw_transaction['value']), int(raw_transaction['nonce']), raw_transaction['signature']))
+        length = int(data['length'])
+        nonce = int(data['nonce'])
+        block = Block(miner, previous_hash, transactions, length, nonce)
+        add_block(block)
         return 'ok'
 
     @app.route('/new_transaction', methods=['POST'])
