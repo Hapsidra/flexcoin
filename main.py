@@ -65,7 +65,7 @@ def add_block(block):
         for node in nodes:
             if node != my_host:
                 try:
-                    requests.post('http://' + node + ':5000' + '/new_block', data=jsonEncoder.encode(block))
+                    requests.post('http://' + node + ':5000' + '/new_block', json=jsonEncoder.encode(block))
                 except:
                     print('node', node, 'is unavailable')
     else:
