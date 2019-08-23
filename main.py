@@ -35,7 +35,10 @@ class JSONEncoder(json.JSONEncoder):
             result['transactions'] = []
             for t in ts:
                 result['transactions'].append(jsonEncoder.encode(t))
-            return result
+            return json.dumps(result)
+        if isinstance(o, Transaction):
+            result = o.__dict__
+            return json.dumps(result)
         if isinstance(o, dict):
             result = {}
             for e in o:
@@ -91,7 +94,7 @@ def is_valid_block(block: Block) -> bool:
 
 def add_transaction(transaction):
     if is_valid_transaction(transaction):
-        print('new transaction:' + json.dumps(transaction.__dict__))
+        print('new transaction:' + jsonEncoder.encode(transaction))
         transactions_pool.append(transaction)
         for node in nodes:
             if node != my_host:
