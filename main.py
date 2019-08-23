@@ -61,11 +61,14 @@ def add_block(block):
         transactions_pool.clear()
         chain[block.get_hash()] = block
         current_block_hash = block.get_hash()
-        print('new block: ', block.__dict__)
+        data = block.__dict__
+        data.transactions = []
+        for t in block.transactions:
+            data.transactions.append(t.__dict__)
         for node in nodes:
             if node != my_host:
                 try:
-                    requests.post('http://' + node + ':5000' + '/new_block', data=block.__dict__)
+                    requests.post('http://' + node + ':5000' + '/new_block', data=data)
                 except:
                     print('node', node, 'is unavailable')
     else:
@@ -121,9 +124,10 @@ def create_server():
         miner = form['miner']
         previous_hash = form['previous_hash']
         transactions_raw = json.loads(form['transactions'])
+        print(transactions_raw)
         transactions = []
         for raw_transaction in transactions_raw:
-            transactions.append(Transaction(raw_transaction['sender'], raw_transaction['to'], raw_transaction['value'], raw_transaction['nonce'], raw_transaction['signature']))
+            transactions.append(Transaction(raw_transaction['sender'], raw_transaction['to'], int(raw_transaction['value']), int(raw_transaction['nonce']), raw_transaction['signature']))
         length = int(form['length'])
         nonce = int(form['nonce'])
         block = Block(miner, previous_hash, transactions, length, nonce)
