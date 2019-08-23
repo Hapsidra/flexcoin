@@ -37,7 +37,7 @@ def is_valid_block(block: Block) -> bool:
         if not is_valid_transaction(transaction):
             print('block contains invalid transaction')
             return False
-    if block.length != chain[current_block_hash].length + 1:
+    if block.length != chain[block.previous_hash].length + 1:
         print('invalid length')
         return False
     return True
@@ -62,9 +62,10 @@ def add_block(block):
         chain[block.get_hash()] = block
         current_block_hash = block.get_hash()
         data = block.__dict__
-        data.transactions = []
+        data['transactions'] = []
         for t in block.transactions:
-            data.transactions.append(t.__dict__)
+            data['transactions'].append(t.__dict__)
+        print('new block:', data)
         for node in nodes:
             if node != my_host:
                 try:
