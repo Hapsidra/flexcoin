@@ -9,8 +9,29 @@
     <script src="js/bootstrap.min.js"></script>
 </head>
 <body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">FlexScan</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="view.html">Blocks</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="check_balance.html">Check Balance</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="create_transaction.html">Create Transaction</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
     <div class="container mt-5">
-        <h1>FlexCoin</h1>
         <h2>Create Transaction</h2>
         <form action="http://192.168.0.1:5000/new_transaction" method="post">
         <div class="form-group">
