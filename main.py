@@ -31,11 +31,17 @@ class JSONEncoder(json.JSONEncoder):
     def encode(self, o):
         if isinstance(o, Block):
             result = o.__dict__
+            ts = o.transactions
+            result['transactions'] = []
+            for t in ts:
+                result['transactions'].append(jsonEncoder.encode(t))
             return result
-        result = {}
-        for e in o:
-            result[e] = json.dumps(o[e].__dict__)
-        return json.dumps(result)
+        if isinstance(o, dict):
+            result = {}
+            for e in o:
+                result[e] = json.dumps(o[e].__dict__)
+            return json.dumps(result)
+        return json.dumps(o.__dict__)
 
 
 my_host = open('host.txt', 'r').readline().strip()
