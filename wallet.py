@@ -107,16 +107,17 @@ def verify(public_key, _message, _signature):
         return False
 
 
-private_key = get_private_key()
-my_address = public_key_to_pem(private_key)
-while True:
-    cmd = input('enter command: ')
-    if cmd == 'sign':
-        message = input('enter message: ')
-        signature = sign(private_key, message)
-        print(signature)
-    else:
-        print('unsupported command')
+if __name__ == '__main__':
+    private_key = get_private_key()
+    my_address = public_key_to_pem(private_key)
+    while True:
+        cmd = input('enter command: ')
+        if cmd == 'sign':
+            message = input('enter message: ')
+            signature = sign(private_key, message)
+            print(signature)
+        else:
+            print('unsupported command')
 
 # private_key = get_private_key()
 # public_key = private_key.public_key()

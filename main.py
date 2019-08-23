@@ -3,7 +3,7 @@ from cryptography.hazmat.primitives.hashes import SHA256
 from flask import Flask, render_template, request as req, jsonify
 import requests
 import json
-from wallet import get_private_key, public_key_to_pem, sign, verify
+from wallet import verify
 from models import *
 my_host = open('host.txt', 'r').readline().strip()
 # signature = sign(private_key, 'kek')
@@ -18,11 +18,14 @@ nodes: [str] = ['192.168.0.1', '192.168.0.2']
 def is_valid_transaction(transaction: Transaction) -> bool:
     sender_state = get_state(transaction.sender)
     if sender_state.nonce >= transaction.nonce:
+        print('invalid nonce')
         return False
     if sender_state.balance < transaction.value:
+        print('no money')
         return False
     message = transaction.sender + ' ' + transaction.to + ' ' + str(transaction.value) + ' ' + str(transaction.nonce)
     if not verify(transaction.sender, message, transaction.signature):
+        print('invalid signature')
         return False
     return True
 
@@ -71,8 +74,9 @@ def create_server():
 
     @app.route('/new_transaction', methods=['POST'])
     def new_transaction():
-        print(req)
+        print('req:', req)
         form = req.form
+        print(form)
         value = int(form['value'])
         nonce = int(form['nonce'])
         transaction = Transaction(form['sender'], form['to'], value, nonce, form['signature'])

@@ -12,21 +12,19 @@
     <div class="container mt-5">
         <h1>FlexCoin</h1>
         <h2>Create Transaction</h2>
-        <form action="http://192.168.0.1/new_transaction" method="post">
+        <form action="http://192.168.0.1:5000/new_transaction" method="post">
         <div class="form-group">
             <label for="sender">From (address)</label>
             <input type="text" class="form-control" id="sender" name="sender">
             <label for="to">To (address)</label>
-            <input type="text" class="form-control" id="to">
+            <input type="text" class="form-control" id="to" name="to">
             <label for="value">Value</label>
-            <input type="text" class="form-control" id="value">
+            <input type="text" class="form-control" id="value" name="value">
             <label for="nonce">Nonce</label>
-            <input type="text" class="form-control" id="nonce">
-            <label for="signature">Signature helper</label>
-            <input type="text" class="form-control" id="signature-helper">
+            <input type="text" class="form-control" id="nonce" name="nonce">
             <label for="signature">Signature</label>
-            <input type="text" class="form-control" id="signature">
-            <button type="button" class="btn btn-primary" onclick="sendTransaction()">Submit</button>
+            <input type="text" class="form-control" id="signature" name="signature">
+            <input type="submit" class="btn btn-primary">
             <button type="button" class="btn btn-primary" onclick="signatureHelper()">Signature Helper</button>
         </div>
         </form>
@@ -34,10 +32,10 @@
     <script>
         function signatureHelper() {
             var s1 = $('#sender').val();
-            var s2 = $('#sender').val();
-            var s3 = $('# ').val();
-            var s4 = $('#sender').val();
-            alert(s1);
+            var s2 = $('#to').val();
+            var s3 = $('#value').val();
+            var s4 = $('#nonce').val();
+            alert(s1 + ' ' + s2 + ' ' + s3 + ' ' + s4);
         }
     </script>
 </body>
