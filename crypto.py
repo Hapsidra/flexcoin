@@ -9,7 +9,7 @@ def generateKey():
     # Generate private key
     key = rsa.generate_private_key(
         public_exponent=65537,
-        key_size=2048,
+        key_size=512,
         backend=default_backend()
     )
     # Write private key to disk for safe keeping
@@ -84,6 +84,7 @@ def verify(public_key, _message, signature):
             ),
             hashes.SHA256()
         )
+        print("Signature OK")
     except InvalidSignature:
         print("Invalid signature")
 
