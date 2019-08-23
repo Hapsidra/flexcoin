@@ -5,8 +5,6 @@ import requests
 import json
 from crypto import get_private_key, public_key_to_pem, sign, verify
 from models import *
-private_key = get_private_key()
-my_address = public_key_to_pem(private_key)
 my_host = open('host.txt', 'r').readline().strip()
 # signature = sign(private_key, 'kek')
 # print(signature)
