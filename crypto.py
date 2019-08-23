@@ -5,7 +5,8 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric import padding
 
-def generateKey():
+
+def generate_key():
     # Generate private key
     key = rsa.generate_private_key(
         public_exponent=65537,
@@ -21,7 +22,8 @@ def generateKey():
         ))
     return key
 
-def existFile(filename):
+
+def exist_file(filename):
     try:
         with open(filename, "rb") as f:
             f2 = f.fileno()
@@ -29,7 +31,8 @@ def existFile(filename):
     except:
         return False
 
-def readKey(filename):
+
+def read_key(filename):
     with open(filename, "rb") as key_file:
         private_key = serialization.load_pem_private_key(
             key_file.read(),
@@ -38,27 +41,31 @@ def readKey(filename):
         )
     return private_key
 
-def checkAndCreateKey():
-    if not existFile("private_key.pem"):
-        key = generateKey()
+
+def get_private_key():
+    if not exist_file("private_key.pem"):
+        key = generate_key()
     else:
-        key = readKey("private_key.pem")
+        key = read_key("private_key.pem")
     return key
 
-def printBytes(s):
+
+def bytes_to_hex(s):
     return s.hex()
 
-def readBytes(s):
+
+def hex_to_bytes(s):
     return bytes(bytearray.fromhex(s))
 
-def printPublicKey(public_key):
+
+def get_public_key(private_key):
+    public_key = private_key.public_key()
     pem = public_key.public_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PublicFormat.SubjectPublicKeyInfo
     )
+    return bytes_to_hex(pem)
 
-    spem = printBytes(pem)
-    print('public key: ' + spem)
 
 def sign(private_key, _message):
     message = _message.encode('utf-8')
@@ -70,10 +77,12 @@ def sign(private_key, _message):
         ),
         hashes.SHA256()
     )
-    return signature
+    return bytes_to_hex(signature)
 
-def verify(public_key, _message, signature):
+
+def verify(public_key, _message, _signature):
     message = _message.encode('utf-8')
+    signature = hex_to_bytes(_signature)
     try:
         public_key.verify(
             signature,
@@ -84,13 +93,14 @@ def verify(public_key, _message, signature):
             ),
             hashes.SHA256()
         )
-        print("Signature OK")
+        return True
     except InvalidSignature:
-        print("Invalid signature")
+        return False
 
-private_key = checkAndCreateKey()
-public_key = private_key.public_key()
-printPublicKey(public_key)
 
-sign = sign(private_key, "flexx")
-verify(public_key, "flexx", sign)
+# private_key = get_private_key()
+# public_key = private_key.public_key()
+# printPublicKey(public_key)
+
+# sign = sign(private_key, "flexx")
+# verify(public_key, "flexx", sign)

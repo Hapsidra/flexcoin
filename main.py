@@ -3,13 +3,17 @@ from cryptography.hazmat.primitives.hashes import SHA256
 from flask import Flask, request as req
 import requests
 import json
-
+from crypto import get_private_key, get_public_key, sign, verify
+private_key = get_private_key()
+print(get_public_key(private_key))
 my_host = open('host.txt', 'r').readline().strip()
-print(my_host)
+signature = sign(private_key, 'kek')
+print(signature)
+print(verify(private_key.public_key(), 'kek', signature))
 
 
 class Transaction:
-    def __init__(self, sender, to, value, nonce):
+    def __init__(self, sender, to, value, nonce, signature):
         self.sender = sender
         self.to = to
         self.value = value
@@ -65,7 +69,7 @@ def get_state(address):
     nonce = 0
     if len(transactions) > 0:
         nonce = transactions[len(transactions) - 1].nonce
-    balance = 0
+    balance = 100
     for transaction in transactions:
         if transaction.sender == address:
             balance -= transaction.value
