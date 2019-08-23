@@ -4,6 +4,9 @@ from flask import Flask, request as req
 import requests
 import json
 
+my_host = open('host.txt', 'r').readline().strip()
+print(my_host)
+
 
 class Transaction:
     def __init__(self, sender, to, value, nonce):
@@ -29,7 +32,7 @@ class State:
 
 
 transactions_pool: [Transaction] = []
-nodes: [str] = ['192.168.0.2']
+nodes: [str] = ['192.168.0.1', '192.168.0.2']
 
 
 def is_valid_transaction(transaction: Transaction) -> bool:
@@ -46,7 +49,11 @@ def add_transaction(transaction):
         print('new transaction:' + json.dumps(transaction.__dict__))
         transactions_pool.append(transaction)
         for node in nodes:
-            requests.post('http://' + node + ':5000' + '/new_transaction', data=transaction.__dict__)
+            if node != my_host:
+                try:
+                    requests.post('http://' + node + ':5000' + '/new_transaction', data=transaction.__dict__)
+                except:
+                    print('node', node, 'is unavailable')
 
 
 def get_all_transactions() -> [Transaction]:
@@ -87,4 +94,4 @@ def create_server():
     return app
 
 
-create_server().run()
+create_server().run(my_host)
