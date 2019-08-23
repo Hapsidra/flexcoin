@@ -97,6 +97,10 @@ def get_state(address):
 def create_server():
     app = Flask(__name__)
 
+    @app.route('/hello/<address>')
+    def hello(address):
+        return render_template('check_balance.html', address=address)
+
     @app.route('/')
     def hello_world():
         return 'hello world'
