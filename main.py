@@ -1,16 +1,16 @@
 from hashlib import sha256
 from cryptography.hazmat.primitives.hashes import SHA256
-from flask import Flask, request as req
+from flask import Flask, request as req, jsonify
 import requests
 import json
-from crypto import get_private_key, public_key_to_pem, sign, verify, pem_to_public_key
+from crypto import get_private_key, public_key_to_pem, sign, verify
 from models import *
 private_key = get_private_key()
-print(public_key_to_pem(private_key))
+my_address = public_key_to_pem(private_key)
 my_host = open('host.txt', 'r').readline().strip()
-signature = sign(private_key, 'kek')
-print(signature)
-print(verify(pem_to_public_key(public_key_to_pem(private_key)), 'kek2', signature))
+# signature = sign(private_key, 'kek')
+# print(signature)
+# print(verify(public_key_to_pem(private_key), 'kek', signature))
 
 
 transactions_pool: [Transaction] = []
@@ -22,6 +22,9 @@ def is_valid_transaction(transaction: Transaction) -> bool:
     if sender_state.nonce >= transaction.nonce:
         return False
     if sender_state.balance < transaction.value:
+        return False
+    message = transaction.sender + ' ' + transaction.to + ' ' + str(transaction.value) + ' ' + str(transaction.nonce)
+    if not verify(transaction.sender, message, transaction.signature):
         return False
     return True
 
@@ -47,7 +50,7 @@ def get_state(address):
     nonce = 0
     if len(transactions) > 0:
         nonce = transactions[len(transactions) - 1].nonce
-    balance = 100
+    balance = 0
     for transaction in transactions:
         if transaction.sender == address:
             balance -= transaction.value
@@ -63,13 +66,18 @@ def create_server():
     def hello_world():
         return 'Hello, World'
 
+    @app.route('/user_state/<address>')
+    def get_user_state(address):
+        state = get_state(address)
+        return jsonify(state.__dict__)
+
     @app.route('/new_transaction', methods=['POST'])
     def new_transaction():
         print(req)
         form = req.form
         value = int(form['value'])
         nonce = int(form['nonce'])
-        transaction = Transaction(form['sender'], form['to'], value, nonce)
+        transaction = Transaction(form['sender'], form['to'], value, nonce, form['signature'])
         add_transaction(transaction)
         return 'ok'
 

@@ -4,6 +4,7 @@ class Transaction:
         self.to = to
         self.value = value
         self.nonce = nonce
+        self.signature = signature
 
 
 class Block:

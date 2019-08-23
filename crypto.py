@@ -93,7 +93,7 @@ def verify(public_key, _message, _signature):
     message = _message.encode('utf-8')
     signature = hex_to_bytes(_signature)
     try:
-        public_key.verify(
+        pem_to_public_key(public_key).verify(
             signature,
             message,
             padding.PSS(
