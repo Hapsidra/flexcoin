@@ -20,6 +20,8 @@ def generate_key():
             format=serialization.PrivateFormat.PKCS8,
             encryption_algorithm=serialization.BestAvailableEncryption(b"flexcoin"),
         ))
+    with open("public_key.pem", "w") as f:
+        f.write(public_key_to_pem(key))
     return key
 
 
