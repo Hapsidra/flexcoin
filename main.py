@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request as req, jsonify
+from flask import Flask, render_template, request as req, jsonify, after_this_request, make_response
 import requests
 from wallet import verify, get_private_key, public_key_to_pem, sign
 from models import *
@@ -37,6 +37,9 @@ def is_valid_block(block: Block) -> bool:
         if not is_valid_transaction(transaction):
             print('block contains invalid transaction')
             return False
+    if block.previous_hash not in chain:
+        print('сиротский блок')
+        return False
     if block.length != chain[block.previous_hash].length + 1:
         print('invalid length')
         return False
@@ -103,8 +106,13 @@ def create_server():
 
     @app.route('/user_state/<address>')
     def get_user_state(address):
+        @after_this_request
+        def add_header(response):
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            return response
         state = get_state(address)
         return jsonify(state.__dict__)
+
 
     @app.route('/chain')
     def get_chain():
