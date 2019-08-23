@@ -4,35 +4,13 @@ from flask import Flask, request as req
 import requests
 import json
 from crypto import get_private_key, get_public_key, sign, verify
+from models import *
 private_key = get_private_key()
 print(get_public_key(private_key))
 my_host = open('host.txt', 'r').readline().strip()
 signature = sign(private_key, 'kek')
 print(signature)
 print(verify(private_key.public_key(), 'kek', signature))
-
-
-class Transaction:
-    def __init__(self, sender, to, value, nonce, signature):
-        self.sender = sender
-        self.to = to
-        self.value = value
-        self.nonce = nonce
-
-
-class Block:
-    def __init__(self, transactions, nonce=0):
-        self.transactions = transactions
-        self.nonce = nonce
-
-    def mine(self):
-        print(type(self.__dict__))
-
-
-class State:
-    def __init__(self, balance, nonce):
-        self.balance = balance
-        self.nonce = nonce
 
 
 transactions_pool: [Transaction] = []
