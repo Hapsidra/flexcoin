@@ -1,6 +1,6 @@
 from hashlib import sha256
 from cryptography.hazmat.primitives.hashes import SHA256
-from flask import Flask, request as req, jsonify
+from flask import Flask, render_template, request as req, jsonify
 import requests
 import json
 from crypto import get_private_key, public_key_to_pem, sign, verify
@@ -62,7 +62,7 @@ def create_server():
 
     @app.route('/')
     def hello_world():
-        return 'Hello, World'
+        return render_template('index.html', name='keke')
 
     @app.route('/user_state/<address>')
     def get_user_state(address):

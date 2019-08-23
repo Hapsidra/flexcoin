@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="js/jquery-3.3.1.slim.min.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>FlexCoin</h1>
+        <h2>Create Transaction</h2>
+        <form action="http://192.168.0.1/new_transaction" method="post">
+        <div class="form-group">
+            <label for="sender">From (address)</label>
+            <input type="text" class="form-control" id="sender" name="sender">
+            <label for="to">To (address)</label>
+            <input type="text" class="form-control" id="to">
+            <label for="value">Value</label>
+            <input type="text" class="form-control" id="value">
+            <label for="nonce">Nonce</label>
+            <input type="text" class="form-control" id="nonce">
+            <label for="signature">Signature helper</label>
+            <input type="text" class="form-control" id="signature-helper">
+            <label for="signature">Signature</label>
+            <input type="text" class="form-control" id="signature">
+            <button type="button" class="btn btn-primary" onclick="sendTransaction()">Submit</button>
+            <button type="button" class="btn btn-primary" onclick="signatureHelper()">Signature Helper</button>
+        </div>
+        </form>
+    </div>
+    <script>
+        function signatureHelper() {
+            var s1 = $('#sender').val();
+            var s2 = $('#sender').val();
+            var s3 = $('# ').val();
+            var s4 = $('#sender').val();
+            alert(s1);
+        }
+    </script>
+</body>
+</html>
