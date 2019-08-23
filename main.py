@@ -3,7 +3,7 @@ from cryptography.hazmat.primitives.hashes import SHA256
 from flask import Flask, render_template, request as req, jsonify
 import requests
 import json
-from crypto import get_private_key, public_key_to_pem, sign, verify
+from wallet import get_private_key, public_key_to_pem, sign, verify
 from models import *
 my_host = open('host.txt', 'r').readline().strip()
 # signature = sign(private_key, 'kek')
