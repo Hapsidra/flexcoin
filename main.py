@@ -124,6 +124,7 @@ def create_server():
         nonce = int(form['nonce'])
         block = Block(miner, previous_hash, transactions, length, nonce)
         add_block(block)
+        return 'ok'
 
     @app.route('/new_transaction', methods=['POST'])
     def new_transaction():
