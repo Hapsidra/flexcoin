@@ -43,31 +43,28 @@
 </div>
 <script>
     $.ajax({
-        url: "http://192.168.0.2:5000/chain",
+        url: "http://192.168.0.1:5000/sorted_chain",
     }).done(function (data) {
-        var ddata = JSON.parse(data);
-        for (let [key, value] of Object.entries(ddata)) {
+        for (let item of data) {
+            console.log(item);
             let transclass = "";
-            if (JSON.stringify(value.transactions).length > 3) {
+            if (JSON.stringify(item.transactions).length > 3) {
                 transclass = "card-with-transactions";
             }
             $("#cards").append($("<div class=\"card " + transclass + "\">\n" +
                 "            <div class=\"card-body\">\n" +
-                "                <p><b>Hash:</b> " + key + "</p>\n" +
-                "                <p><b>Miner:</b> " + value.miner + "</p>\n" +
-                "                <p><b>Previous Hash:</b> " + value.previous_hash + "</p>\n" +
+                "                <p><b>Hash:</b> " + item.hash + "</p>\n" +
+                "                <p><b>Miner:</b> " + item.miner + "</p>\n" +
+                "                <p><b>Previous Hash:</b> " + item.previous_hash + "</p>\n" +
                 "                <p><b>Transactions:</b> " +
                 "<div class=\"transaction-card\">" +
-                JSON.stringify(value.transactions) + "</p>\n"
+                JSON.stringify(item.transactions) + "</p>\n"
                 +
                     "</div>" +
-                "                <p><b>Length:</b> " + value.length + "</p>\n" +
-                "                <p><b>Nonce:</b> " + value.nonce + "</p>\n" +
+                "                <p><b>Length:</b> " + item.length + "</p>\n" +
+                "                <p><b>Nonce:</b> " + item.nonce + "</p>\n" +
                 "            </div>\n" +
                 "        </div>"));
-            console.log(key);
-            console.log(value);
-            <!--                console.log(`${key}: ${value}`);-->
         }
     });
 
