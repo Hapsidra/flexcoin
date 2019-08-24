@@ -34,15 +34,7 @@
 </nav>
 <div class="container mt-5">
     <h2>Chain</h2>
-    <div class="card">
-        <div class="card-body">
-            <p><b>Hash:</b> asdhasjdkasdasdasjd</p>
-            <p><b>Miner:</b> askdjasdasdhaskjhdjka</p>
-            <p><b>Previous Hash:</b> 0.1 FLX</p>
-            <p><b>Transactions:</b> 2</p>
-            <p><b>Length:</b> 2</p>
-            <p><b>Nonce:</b> 2</p>
-        </div>
+    <div id="cards">
     </div>
 </div>
 <script>
@@ -51,6 +43,16 @@
     }).done(function (data) {
         var ddata = JSON.parse(data);
         for (let [key, value] of Object.entries(ddata)) {
+            $("#cards").append($("<div class=\"card\">\n" +
+                "            <div class=\"card-body\">\n" +
+                "                <p><b>Hash:</b> " + key + "</p>\n" +
+                "                <p><b>Miner:</b> " + value.miner + "</p>\n" +
+                "                <p><b>Previous Hash:</b> " + value.previous_hash + "</p>\n" +
+                "                <p><b>Transactions:</b> " + value.transactions + "</p>\n" +
+                "                <p><b>Length:</b> " + value.length + "</p>\n" +
+                "                <p><b>Nonce:</b> " + value.nonce + "</p>\n" +
+                "            </div>\n" +
+                "        </div>"));
             console.log(key);
             console.log(value);
             <!--                console.log(`${key}: ${value}`);-->
