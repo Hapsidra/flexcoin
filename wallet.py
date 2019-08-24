@@ -34,6 +34,15 @@ def exist_file(filename):
         return False
 
 
+def encode_private(ps: str):
+    private_key = serialization.load_pem_private_key(
+        ps.encode('utf-8'),
+        password=b"flexcoin",
+        backend=default_backend()
+    )
+    return private_key
+
+
 def read_key(filename):
     with open(filename, "rb") as key_file:
         private_key = serialization.load_pem_private_key(

@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request as req, jsonify, after_this_request, make_response
 import requests
-from wallet import verify, get_private_key, public_key_to_pem, sign
+from wallet import verify, get_private_key, public_key_to_pem, sign, encode_private
 from models import *
 import threading
 DIFFICULTY = 5
@@ -19,13 +19,36 @@ class Server(threading.Thread):
         def hello_world():
             return 'hello world'
 
-        @app.route('/sign/<message>')
-        def d_sign(message):
+        @app.route('/sign', methods=['POST'])
+        def d_sign():
             @after_this_request
             def add_header(resp):
                 resp.headers['Access-Control-Allow-Origin'] = '*'
                 return resp
-            return sign(private_key, message)
+            print(req.data)
+            d = json.loads(req.data)
+            print(d)
+            print(type(d))
+            k = d['key']
+            print(k)
+            pk = encode_private(k)
+            message = d['message']
+            return sign(pk, message)
+
+        @app.route('/sorted_chain')
+        def sorted_chain():
+            @after_this_request
+            def add_header(resp):
+                resp.headers['Access-Control-Allow-Origin'] = '*'
+                return resp
+            s = []
+            h = current_block_hash
+            while h != '':
+                b = json.loads(json.dumps(chain[h], default=lambda o: o.__dict__))
+                b['hash'] = h
+                s.append(b)
+                h = chain[h].previous_hash
+            return jsonify(s)
 
         @app.route('/user_state/<address>')
         def get_user_state(address):
@@ -55,10 +78,14 @@ class Server(threading.Thread):
 
         @app.route('/new_transaction', methods=['POST'])
         def new_transaction():
-            print('req:', req)
-            form = req.form
-            add_transaction(Transaction.from_dict(form))
-            return 'ok'
+            @after_this_request
+            def add_header(response):
+                response.headers['Access-Control-Allow-Origin'] = '*'
+                return response
+            print('получена новая транзакция:', req)
+            if add_transaction(Transaction.from_dict(json.loads(req.data))):
+                return 'ok'
+            return 'fail'
 
         return app
 
@@ -148,6 +175,8 @@ def add_transaction(transaction):
                     requests.post('http://' + node + ':5000' + '/new_transaction', data=transaction.__dict__)
                 except:
                     print('node', node, 'is unavailable')
+        return True
+    return False
 
 
 def add_block(block):
@@ -188,6 +217,9 @@ def get_state(address):
 
 
 def main():
+    print('your private:', private_key)
+    #ps = '-----BEGIN ENCRYPTED PRIVATE KEY-----\nMIIBvTBXBgkqhkiG9w0BBQ0wSjApBgkqhkiG9w0BBQwwHAQI1Des8sxHbnYCAggA\nMAwGCCqGSIb3DQIJBQAwHQYJYIZIAWUDBAEqBBBUPj978aRSrZugNxYunSnxBIIB\nYK0WNIeTSuj8WiLXKI3V30yMQeX36eyXZFGb9/4EvP+rqV6aE5EXsLiZf6qMaiH1\nts/dcmaSwvTePY49zcvrlOByqampDl9lEKwnKHCS5fcwbBh23bVVmA4db/MaGC4N\nkp7wi+kdZBobQMrEyjLZsTxgACnVHYjIALivTlOuBlTnqbItvrMLCfGGV9IsC4vG\ndqTtyqKeRq3oqhrIPMFUfJmAbvGE5sW/oTW8Se7+oBu8XIX0IIBfazvkdYVO1msO\n8L3r4X9aztp7e+wPHTOk1d0QXk17IFqlYiDVeOLeNUC48rG+bHsAcPPCAOUdapfP\nZXvxUkQo8baxLt8xV+OU7cF58aK2hjty5OidBOVkuClvnpH2JxVAEugQuC8whjZZ\nZeowvZG9Pu4j74W1J3WxAXQtiQwSBhTbCgV4QGZGCuwfCy1Mw7ILm1de1x/o26CH\nc3Xyi5vjPcv0eRjXFApvHUY=\n-----END ENCRYPTED PRIVATE KEY-----'
+    #print(public_key_to_pem(encode_private(ps)))
     server = Server()
     server.start()
     global current_block_hash
