@@ -85,7 +85,7 @@ class Server(threading.Thread):
                 response.headers['Access-Control-Allow-Origin'] = '*'
                 return response
             print('получена новая транзакция:', req)
-            t_json = json.loads(req.data)
+            t_json = json.loads(json.loads(req.data))
             print(t_json)
             print(type(t_json))
             print(req.data)
