@@ -193,7 +193,7 @@ def add_transaction(transaction):
         for node in nodes:
             if node != my_host:
                 try:
-                    requests.post('http://' + node + ':5000' + '/new_transaction', data=transaction.__dict__)
+                    requests.post('http://' + node + ':5000' + '/new_transaction', json=json.dumps(transaction, default=lambda o:o.__dict__))
                 except:
                     print('node', node, 'is unavailable')
         return True
