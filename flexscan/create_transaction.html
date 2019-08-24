@@ -32,9 +32,9 @@
         </div>
     </div>
 </nav>
-    <div class="container mt-5">
-        <h2>Create Transaction</h2>
-        <form action="http://192.168.0.1:5000/new_transaction" method="post" class="mt-3">
+<div class="container mt-5">
+    <h2>Create Transaction</h2>
+    <form action="http://192.168.0.1:5000/new_transaction" method="post" class="mt-3">
         <div class="form-group">
             <label for="sender" class="mt-2">From (address)</label>
             <textarea class="form-control" id="sender" name="sender" rows="3"></textarea>
@@ -51,19 +51,19 @@
                 <input type="submit" class="btn btn-outline-primary ml-1" value="Create" disabled>
             </div>
         </div>
-        </form>
-    </div>
-    <div class="container">
-        <p class="text-break" id="signatureHelper"></p>
-    </div>
-    <script>
-        function signatureHelper() {
-            var s1 = $('#sender').val();
-            var s2 = $('#to').val();
-            var s3 = $('#value').val();
-            var s4 = $('#nonce').val();
-            document.getElementById('signatureHelper').innerText = s1 + ' ' + s2 + ' ' + s3 + ' ' + s4;
-        }
-    </script>
+    </form>
+</div>
+<div class="container">
+    <p class="text-break" id="signatureHelper"></p>
+</div>
+<script>
+    function signatureHelper() {
+        var s1 = $('#sender').val();
+        var s2 = $('#to').val();
+        var s3 = $('#value').val();
+        var s4 = $('#nonce').val();
+        document.getElementById('signatureHelper').innerText = s1 + ' ' + s2 + ' ' + s3 + ' ' + s4;
+    }
+</script>
 </body>
 </html>

@@ -51,16 +51,16 @@
     </div>
 </div>
 <script>
-   function checkBalance() {
-       var address = $('#address').val();
-       $.ajax({
+    function checkBalance() {
+        var address = $('#address').val();
+        $.ajax({
             url: "http://192.168.0.2:5000/user_state/" + address,
-            }).done(function(data) {
-                console.log(data);
-                $('#card-text').show();
-                $('#address-text').text(address);
-                $('#balance-text').text(data.balance);
-                $('#nonce-text').text(data.nonce);
+        }).done(function (data) {
+            console.log(data);
+            $('#card-text').show();
+            $('#address-text').text(address);
+            $('#balance-text').text(data.balance);
+            $('#nonce-text').text(data.nonce);
         });
     }
 </script>

@@ -32,27 +32,29 @@
         </div>
     </div>
 </nav>
-    <div class="container mt-5">
-        <h2>Chain</h2>
-        <div class="card">
-            <div class="card-body">
-                <p><b>From:</b> asdhasjdkasdasdasjd</p>
-                <p><b>To:</b> askdjasdasdhaskjhdjka</p>
-                <p><b>Value:</b> 0.1 FLX</p>
-                <p><b>Nonce:</b> 2</p>
-            </div>
+<div class="container mt-5">
+    <h2>Chain</h2>
+    <div class="card">
+        <div class="card-body">
+            <p><b>Hash:</b> asdhasjdkasdasdasjd</p>
+            <p><b>Miner:</b> askdjasdasdhaskjhdjka</p>
+            <p><b>Previous Hash:</b> 0.1 FLX</p>
+            <p><b>Transactions:</b> 2</p>
+            <p><b>Length:</b> 2</p>
+            <p><b>Nonce:</b> 2</p>
         </div>
     </div>
+</div>
 <script>
-   $.ajax({
+    $.ajax({
         url: "http://192.168.0.2:5000/chain",
-        }).done(function(data) {
-            var ddata = JSON.parse(data);
-            for (let [key, value] of Object.entries(ddata)) {
-                console.log(key);
-                console.log(value);
-<!--                console.log(`${key}: ${value}`);-->
-            }
+    }).done(function (data) {
+        var ddata = JSON.parse(data);
+        for (let [key, value] of Object.entries(ddata)) {
+            console.log(key);
+            console.log(value);
+            <!--                console.log(`${key}: ${value}`);-->
+        }
     });
 </script>
 </body>
