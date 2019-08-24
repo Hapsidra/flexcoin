@@ -73,7 +73,9 @@ class Server(threading.Thread):
         @app.route('/new_block', methods=['POST'])
         def new_block():
             print('получен новый блок:', req)
-            block_json = json.loads(json.loads(req.data))
+            block_json = json.loads(req.data)
+            if isinstance(block_json, str):
+                block_json = json.loads(block_json)
             add_block(Block.from_dict(block_json))
             return 'ok'
 
@@ -85,7 +87,9 @@ class Server(threading.Thread):
                 response.headers['Access-Control-Allow-Origin'] = '*'
                 return response
             print('получена новая транзакция:', req)
-            t_json = json.loads(json.loads(req.data))
+            t_json = json.loads(req.data)
+            if isinstance(t_json, str):
+                t_json = json.loads(t_json)
             print(t_json)
             print(type(t_json))
             print(req.data)
