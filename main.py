@@ -90,7 +90,7 @@ current_block_hash = None
 def is_valid_transaction(transaction: Transaction) -> bool:
     sender_state = get_state(transaction.sender)
     if sender_state.nonce >= transaction.nonce:
-        print('invalid nonce')
+        print('invalid nonce. Sender nonce:', sender_state.nonce, 'transactions nonce:', transaction.nonce)
         return False
     if sender_state.balance < transaction.value:
         print('no money')
@@ -126,6 +126,10 @@ def is_valid_block(block: Block) -> bool:
 
 def add_transaction(transaction):
     if is_valid_transaction(transaction):
+        for t in transactions_pool:
+            if t.sender == transaction.sender and t.nonce >= transaction.nonce:
+                print('invalid nonce. pool nonce:', t.nonce, 'transactions nonce:', transaction.nonce)
+                return
         print('new transaction:' + json.dumps(transaction, default=lambda o: o.__dict__))
         transactions_pool.append(transaction)
         for node in nodes:
@@ -138,12 +142,13 @@ def add_transaction(transaction):
 
 def add_block(block):
     global current_block_hash
+    global transactions_pool
     if is_valid_block(block):
-        transactions_pool.clear()
         chain[block.get_hash()] = block
         current_block_hash = block.get_hash()
         block_json = json.dumps(block, default=lambda o: o.__dict__)
         print('new block:', block_json)
+        transactions_pool = []
         for node in nodes:
             if node != my_host:
                 try:
