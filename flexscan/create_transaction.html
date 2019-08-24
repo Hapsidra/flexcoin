@@ -57,12 +57,17 @@
     <p class="text-break" id="signatureHelper"></p>
 </div>
 <script>
-    function signatureHelper() {
+    async function signatureHelper() {
         var s1 = $('#sender').val();
         var s2 = $('#to').val();
         var s3 = $('#value').val();
         var s4 = $('#nonce').val();
-        document.getElementById('signatureHelper').innerText = s1 + ' ' + s2 + ' ' + s3 + ' ' + s4;
+        const message = s1 + ' ' + s2 + ' ' + s3 + ' ' + s4
+        const resp = await fetch('http://192.168.0.1:5000/sign/' + message);
+        const signature = await resp.text()
+        console.log(resp)
+        console.log(signature)
+        document.getElementById('signature').value = signature;
         $('#submit-btn').removeAttr("disabled");
     }
 </script>

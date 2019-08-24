@@ -19,6 +19,14 @@ class Server(threading.Thread):
         def hello_world():
             return 'hello world'
 
+        @app.route('/sign/<message>')
+        def d_sign(message):
+            @after_this_request
+            def add_header(resp):
+                resp.headers['Access-Control-Allow-Origin'] = '*'
+                return resp
+            return sign(private_key, message)
+
         @app.route('/user_state/<address>')
         def get_user_state(address):
             @after_this_request
@@ -157,13 +165,16 @@ def add_block(block):
                     requests.post('http://' + node + ':5000' + '/new_block', json=block_json)
                 except:
                     print('node', node, 'is unavailable')
+    else:
+        chain[block.get_hash()] = block
 
 
 def get_state(address):
     nonce = 0
     balance = 0
-    for block_hash in chain:
-        block = chain[block_hash]
+    h = current_block_hash
+    while chain[h].length > 1:
+        block = chain[h]
         if block.miner == address:
             balance += MINER_REWARD
         for transaction in block.transactions:
@@ -172,6 +183,7 @@ def get_state(address):
                 nonce = max(nonce, transaction.nonce)
             if transaction.to == address:
                 balance += transaction.value
+        h = block.previous_hash
     return State(balance, nonce)
 
 
@@ -215,23 +227,3 @@ def main():
 
 
 main()
-
-# class JSONEncoder(json.JSONEncoder):
-# #     def encode(self, o):
-# #         if isinstance(o, Block):
-# #             result = o.__dict__
-# #             ts = o.transactions
-# #             result['transactions'] = []
-# #             for t in ts:
-# #                 result['transactions'].append(jsonEncoder.encode(t))
-# #             return json.dumps(result)
-# #         if isinstance(o, Transaction):
-# #             result = o.__dict__
-# #             return json.dumps(result)
-# #         if isinstance(o, dict):
-# #             result = {}
-# #             for e in o:
-# #                 result[e] = json.dumps(o[e].__dict__)
-# #             return json.dumps(result)
-# #         return json.dumps(o.__dict__)
-# jsonEncoder = JSONEncoder()
