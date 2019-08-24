@@ -8,5 +8,6 @@
 }
 
 .navbar-nav .active{
-    background-color: black;
+    background-color: #dfdfdf;
+    border-radius: 5px;
 }

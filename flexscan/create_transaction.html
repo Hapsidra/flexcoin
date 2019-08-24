@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Create Transaction</title>
     <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
     <script src="js/jquery-3.3.1.slim.min.js"></script>
     <script src="js/popper.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
@@ -33,24 +34,28 @@
 </nav>
     <div class="container mt-5">
         <h2>Create Transaction</h2>
-        <form action="http://192.168.0.1:5000/new_transaction" method="post">
+        <form action="http://192.168.0.1:5000/new_transaction" method="post" class="mt-3">
         <div class="form-group">
-            <label for="sender">From (address)</label>
-            <input type="text" class="form-control" id="sender" name="sender">
-            <label for="to">To (address)</label>
-            <input type="text" class="form-control" id="to" name="to">
-            <label for="value">Value</label>
+            <label for="sender" class="mt-2">From (address)</label>
+            <textarea class="form-control" id="sender" name="sender" rows="3"></textarea>
+            <label for="to" class="mt-2">To (address)</label>
+            <textarea class="form-control" id="to" name="to" rows="3"></textarea>
+            <label for="value" class="mt-2">Value</label>
             <input type="text" class="form-control" id="value" name="value">
-            <label for="nonce">Nonce</label>
+            <label for="nonce" class="mt-2">Nonce</label>
             <input type="text" class="form-control" id="nonce" name="nonce">
-            <label for="signature">Signature</label>
+            <label for="signature" class="mt-2">Signature</label>
             <input type="text" class="form-control" id="signature" name="signature">
-            <input type="submit" class="btn btn-primary">
-            <button type="button" class="btn btn-primary" onclick="signatureHelper()">Signature Helper</button>
+            <div class="mt-4">
+                <button type="button" class="btn btn-primary" onclick="signatureHelper()">Sign</button>
+                <input type="submit" class="btn btn-outline-primary ml-1" value="Create" disabled>
+            </div>
         </div>
         </form>
     </div>
-    <pre id="signatureHelper"></pre>
+    <div class="container">
+        <p class="text-break" id="signatureHelper"></p>
+    </div>
     <script>
         function signatureHelper() {
             var s1 = $('#sender').val();
