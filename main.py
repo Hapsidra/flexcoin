@@ -105,6 +105,11 @@ class Server(threading.Thread):
                 return 'ok'
             return 'fail'
 
+        @app.route('/register_node/<node>')
+        def register_node(node):
+            nodes.append(node)
+            return 'ok'
+
         return app
 
     def run(self) -> None:
