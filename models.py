@@ -26,7 +26,7 @@ class Block:
         self.nonce = nonce
 
     def get_hash(self):
-        return sha256(json.dumps(self.__dict__).encode()).hexdigest()
+        return sha256(json.dumps(self, default=lambda o: o.__dict__).encode()).hexdigest()
 
     @staticmethod
     def from_dict(data):
