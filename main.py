@@ -118,6 +118,7 @@ def is_valid_block(block: Block) -> bool:
         return False
     if block.length <= chain[current_block_hash].length:
         print('не самый длинный блок')
+        return False
     if block.length != chain[block.previous_hash].length + 1:
         print('invalid length')
         return False
