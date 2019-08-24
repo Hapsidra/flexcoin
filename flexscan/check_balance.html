@@ -54,7 +54,7 @@
     function checkBalance() {
         var address = $('#address').val();
         $.ajax({
-            url: "http://192.168.0.2:5000/user_state/" + address,
+            url: "http://192.168.0.1:5000/user_state/" + address,
         }).done(function (data) {
             console.log(data);
             $('#card-text').show();

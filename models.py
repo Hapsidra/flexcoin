@@ -30,7 +30,6 @@ class Block:
 
     @staticmethod
     def from_dict(data):
-        print(type(data))
         miner = data['miner']
         previous_hash = data['previous_hash']
         transactions_raw = data['transactions']

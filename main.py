@@ -152,24 +152,8 @@ def add_block(block):
                     print('node', node, 'is unavailable')
 
 
-def get_all_transactions() -> [Transaction]:
-    return get_verified_transactions() + transactions_pool
-
-
-def get_verified_transactions() -> [Transaction]:
-    transactions = []
-    for block_hash in chain:
-        for transaction in chain[block_hash].transactions:
-            transactions.append(transaction)
-    return transactions
-
-
 def get_state(address):
-    transactions = get_all_transactions()
     nonce = 0
-    for transaction in transactions:
-        if transaction.sender == address:
-            nonce = max(nonce, transaction.nonce)
     balance = 0
     for block_hash in chain:
         block = chain[block_hash]
@@ -178,7 +162,8 @@ def get_state(address):
         for transaction in block.transactions:
             if transaction.sender == address:
                 balance -= transaction.value
-            elif transaction.to == address:
+                nonce = max(nonce, transaction.nonce)
+            if transaction.to == address:
                 balance += transaction.value
     return State(balance, nonce)
 
@@ -195,7 +180,6 @@ def main():
                 if resp.ok:
                     chain_json = resp.json()
                     for block_hash in chain_json:
-                        print(chain_json[block_hash])
                         block_json = chain_json[block_hash]
                         block = Block.from_dict(block_json)
                         chain[block_hash] = block
