@@ -195,7 +195,8 @@ def main():
                 if resp.ok:
                     chain_json = resp.json()
                     for block_hash in chain_json:
-                        block_json = json.loads(chain_json[block_hash])
+                        print(chain_json[block_hash])
+                        block_json = chain_json[block_hash]
                         block = Block.from_dict(block_json)
                         chain[block_hash] = block
                         if current_block_hash is None or block.length > chain[current_block_hash].length:
