@@ -1,12 +1,15 @@
-from flask import Flask, render_template, request as req, jsonify, after_this_request, make_response
+from flask import Flask, request as req, jsonify, after_this_request
 import requests
 from wallet import verify, get_private_key, public_key_to_pem, sign, encode_private
 from models import *
 import threading
+# Сложность сети
 DIFFICULTY = 5
+# Награда майнеру
 MINER_REWARD = 25
 
 
+# Сервер который отвечает за API
 class Server(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -17,8 +20,9 @@ class Server(threading.Thread):
 
         @app.route('/')
         def hello_world():
-            return 'hello world'
+            return 'flexcoin'
 
+        # API для создания подписи
         @app.route('/sign', methods=['POST'])
         def d_sign():
             @after_this_request
@@ -35,21 +39,16 @@ class Server(threading.Thread):
             message = d['message']
             return sign(pk, message)
 
+        # возравщает текущую цепь
         @app.route('/sorted_chain')
         def sorted_chain():
             @after_this_request
             def add_header(resp):
                 resp.headers['Access-Control-Allow-Origin'] = '*'
                 return resp
-            s = []
-            h = current_block_hash
-            while h != '':
-                b = json.loads(json.dumps(chain[h], default=lambda o: o.__dict__))
-                b['hash'] = h
-                s.append(b)
-                h = chain[h].previous_hash
-            return jsonify(s)
+            return jsonify(get_current_chain())
 
+        # получить состояние пользователя, баланс и нонс
         @app.route('/user_state/<address>')
         def get_user_state(address):
             @after_this_request
@@ -60,6 +59,7 @@ class Server(threading.Thread):
             state = get_state(address)
             return jsonify(state.__dict__)
 
+        # получить всю цепочку
         @app.route('/chain')
         def get_chain():
             @after_this_request
@@ -69,6 +69,7 @@ class Server(threading.Thread):
 
             return json.dumps(chain, default=lambda o: o.__dict__)
 
+        # создание нового блока
         @app.route('/new_block', methods=['POST'])
         def new_block():
             print('получен новый блок:', req)
@@ -76,6 +77,7 @@ class Server(threading.Thread):
             add_block(Block.from_dict(block_json))
             return 'ok'
 
+        # создание новой транзакции
         @app.route('/new_transaction', methods=['POST'])
         def new_transaction():
             @after_this_request
@@ -83,7 +85,11 @@ class Server(threading.Thread):
                 response.headers['Access-Control-Allow-Origin'] = '*'
                 return response
             print('получена новая транзакция:', req)
-            if add_transaction(Transaction.from_dict(json.loads(req.data))):
+            t_json = json.loads(req.data)
+            print(t_json)
+            print(type(t_json))
+            print(req.data)
+            if add_transaction(Transaction.from_dict(t_json)):
                 return 'ok'
             return 'fail'
 
@@ -93,6 +99,7 @@ class Server(threading.Thread):
         Server.create_server().run(my_host)
 
 
+# Класс майнера
 class Miner(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -123,6 +130,18 @@ my_address = public_key_to_pem(private_key)
 current_block_hash = None
 
 
+def get_current_chain():
+    s = []
+    h = current_block_hash
+    while h != '':
+        b = json.loads(json.dumps(chain[h], default=lambda o: o.__dict__))
+        b['hash'] = h
+        s.append(b)
+        h = chain[h].previous_hash
+    return s
+
+
+# проверка транзакции
 def is_valid_transaction(transaction: Transaction) -> bool:
     sender_state = get_state(transaction.sender)
     if sender_state.nonce >= transaction.nonce:
@@ -138,6 +157,7 @@ def is_valid_transaction(transaction: Transaction) -> bool:
     return True
 
 
+# проверка блока
 def is_valid_block(block: Block) -> bool:
     if block.get_hash() in chain:
         print('block already in chain')
@@ -161,6 +181,7 @@ def is_valid_block(block: Block) -> bool:
     return True
 
 
+# добавление транзакции
 def add_transaction(transaction):
     if is_valid_transaction(transaction):
         for t in transactions_pool:
@@ -179,6 +200,7 @@ def add_transaction(transaction):
     return False
 
 
+# добавление блока
 def add_block(block):
     global current_block_hash
     global transactions_pool
@@ -198,6 +220,7 @@ def add_block(block):
         chain[block.get_hash()] = block
 
 
+# получние стейта юзера
 def get_state(address):
     nonce = 0
     balance = 0
@@ -217,13 +240,12 @@ def get_state(address):
 
 
 def main():
-    print('your private:', private_key)
-    #ps = '-----BEGIN ENCRYPTED PRIVATE KEY-----\nMIIBvTBXBgkqhkiG9w0BBQ0wSjApBgkqhkiG9w0BBQwwHAQI1Des8sxHbnYCAggA\nMAwGCCqGSIb3DQIJBQAwHQYJYIZIAWUDBAEqBBBUPj978aRSrZugNxYunSnxBIIB\nYK0WNIeTSuj8WiLXKI3V30yMQeX36eyXZFGb9/4EvP+rqV6aE5EXsLiZf6qMaiH1\nts/dcmaSwvTePY49zcvrlOByqampDl9lEKwnKHCS5fcwbBh23bVVmA4db/MaGC4N\nkp7wi+kdZBobQMrEyjLZsTxgACnVHYjIALivTlOuBlTnqbItvrMLCfGGV9IsC4vG\ndqTtyqKeRq3oqhrIPMFUfJmAbvGE5sW/oTW8Se7+oBu8XIX0IIBfazvkdYVO1msO\n8L3r4X9aztp7e+wPHTOk1d0QXk17IFqlYiDVeOLeNUC48rG+bHsAcPPCAOUdapfP\nZXvxUkQo8baxLt8xV+OU7cF58aK2hjty5OidBOVkuClvnpH2JxVAEugQuC8whjZZ\nZeowvZG9Pu4j74W1J3WxAXQtiQwSBhTbCgV4QGZGCuwfCy1Mw7ILm1de1x/o26CH\nc3Xyi5vjPcv0eRjXFApvHUY=\n-----END ENCRYPTED PRIVATE KEY-----'
-    #print(public_key_to_pem(encode_private(ps)))
+    print('your address:', my_address)
     server = Server()
     server.start()
     global current_block_hash
 
+    # восстановление цепочки
     for node in nodes:
         if node != my_host:
             try:
@@ -239,6 +261,7 @@ def main():
                 print('Получен чейн')
             except:
                 print('node ' + node + ' is unavailable')
+    # если цепочка пуста создать генезис блок
     if len(chain) == 0:
         print('Создан генезис')
         genesis = Block('', '', [], 1, 25814)
@@ -246,6 +269,7 @@ def main():
         current_block_hash = genesis.get_hash()
     print(json.dumps(chain, default=lambda o: o.__dict__))
     print('Хеш последнего:', current_block_hash)
+    # запуск CLI
     while True:
         cmd = input()
         if cmd == 'sign':
@@ -253,7 +277,19 @@ def main():
             signature = sign(private_key, message)
             print(signature)
         elif cmd == 'mine':
+            print('mining...')
             Miner().start()
+        elif cmd == 'balance':
+            print(get_state(my_address).balance)
+        elif cmd == 'chain':
+            print(json.dumps(get_current_chain(), default=lambda o: o.__dict__))
+        elif cmd == 'send':
+            to = input('to: ')
+            value = int(input('value: '))
+            n = get_state(my_address).nonce + 1
+            m = my_address + ' ' + to + ' ' + str(value) + ' ' + str(n)
+            if add_transaction(Transaction(my_address, to, value, n, sign(private_key, m))):
+                print('success')
         else:
             print('unsupported command')
 

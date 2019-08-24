@@ -58,6 +58,7 @@ def read_key(filename):
 # чтение либо создание приватного ключа
 def get_private_key():
     if not exist_file("private_key.pem"):
+        print('generating new key')
         key = generate_key()
     else:
         key = read_key("private_key.pem")
