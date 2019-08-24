@@ -34,6 +34,10 @@
 </nav>
 <div class="container mt-5">
     <h2>Chain</h2>
+    <div class="form-group form-check">
+        <input type="checkbox" class="form-check-input" id="transactions-only" onclick="toggleTransactionsOnly()">
+        <label class="form-check-label" for="transactions-only">Show only blocks with transactions</label>
+    </div>
     <div id="cards">
     </div>
 </div>
@@ -43,12 +47,20 @@
     }).done(function (data) {
         var ddata = JSON.parse(data);
         for (let [key, value] of Object.entries(ddata)) {
-            $("#cards").append($("<div class=\"card\">\n" +
+            let transclass = "";
+            if (JSON.stringify(value.transactions).length > 3) {
+                transclass = "card-with-transactions";
+            }
+            $("#cards").append($("<div class=\"card " + transclass + "\">\n" +
                 "            <div class=\"card-body\">\n" +
                 "                <p><b>Hash:</b> " + key + "</p>\n" +
                 "                <p><b>Miner:</b> " + value.miner + "</p>\n" +
                 "                <p><b>Previous Hash:</b> " + value.previous_hash + "</p>\n" +
-                "                <p><b>Transactions:</b> " + JSON.stringify(value.transactions) + "</p>\n" +
+                "                <p><b>Transactions:</b> " +
+                "<div class=\"transaction-card\">" +
+                JSON.stringify(value.transactions) + "</p>\n"
+                +
+                    "</div>" +
                 "                <p><b>Length:</b> " + value.length + "</p>\n" +
                 "                <p><b>Nonce:</b> " + value.nonce + "</p>\n" +
                 "            </div>\n" +
@@ -58,6 +70,18 @@
             <!--                console.log(`${key}: ${value}`);-->
         }
     });
+
+    var toggle = 0;
+    function toggleTransactionsOnly() {
+        if(toggle===0) {
+            $('div.card').not('div.card-with-transactions').hide();
+            toggle = 1;
+        }else
+        {
+            $('div.card').show();
+            toggle = 0;
+        }
+    }
 </script>
 </body>
 </html>
