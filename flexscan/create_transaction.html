@@ -36,6 +36,8 @@
     <h2>Create Transaction</h2>
     <form action="http://192.168.0.1:5000/new_transaction" method="post" class="mt-3">
         <div class="form-group">
+            <label for="private-key" class="mt-2">Your Private Key</label>
+            <textarea class="form-control" id="private-key" name="sender" rows="6"></textarea>
             <label for="sender" class="mt-2">From (address)</label>
             <textarea class="form-control" id="sender" name="sender" rows="3"></textarea>
             <label for="to" class="mt-2">To (address)</label>
@@ -62,11 +64,11 @@
         var s2 = $('#to').val();
         var s3 = $('#value').val();
         var s4 = $('#nonce').val();
-        const message = s1 + ' ' + s2 + ' ' + s3 + ' ' + s4
+        const message = s1 + ' ' + s2 + ' ' + s3 + ' ' + s4;
         const resp = await fetch('http://192.168.0.1:5000/sign/' + message);
-        const signature = await resp.text()
-        console.log(resp)
-        console.log(signature)
+        const signature = await resp.text();
+        console.log(resp);
+        console.log(signature);
         document.getElementById('signature').value = signature;
         $('#submit-btn').removeAttr("disabled");
     }
