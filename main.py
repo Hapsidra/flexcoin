@@ -59,6 +59,14 @@ class Server(threading.Thread):
             state = get_state(address)
             return jsonify(state.__dict__)
 
+        @app.route('/next_nonce/<address>')
+        def get_next_nonce(address):
+            @after_this_request
+            def add_header(response):
+                response.headers['Access-Control-Allow-Origin'] = '*'
+                return response
+            return str(next_nonce(address))
+
         # получить всю цепочку
         @app.route('/chain')
         def get_chain():
@@ -243,6 +251,14 @@ def get_state(address):
     return State(balance, nonce)
 
 
+def next_nonce(address):
+    nonce = get_state(address).nonce
+    for t in transactions_pool:
+        if t.sender == address and t.nonce > nonce:
+            nonce = t.nonce
+    return nonce + 1
+
+
 def main():
     print('your address:', my_address)
     server = Server()
@@ -290,10 +306,12 @@ def main():
         elif cmd == 'send':
             to = input('to: ')
             value = int(input('value: '))
-            n = get_state(my_address).nonce + 1
+            n = next_nonce(my_address)
             m = my_address + ' ' + to + ' ' + str(value) + ' ' + str(n)
             if add_transaction(Transaction(my_address, to, value, n, sign(private_key, m))):
                 print('success')
+        elif cmd == 'pool':
+            print(json.dumps(transactions_pool, default=lambda o: o.__dict__))
         else:
             print('unsupported command')
 

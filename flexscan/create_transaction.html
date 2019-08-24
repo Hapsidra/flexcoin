@@ -59,7 +59,7 @@
         var to = $('#to').val();
         var value = $('#value').val();
         const privateKey = document.getElementById('private-key').value
-        const nonce = (await (await fetch('http://192.168.0.1:5000/user_state/' + sender)).json()).nonce + 1
+        const nonce = await (await fetch('http://192.168.0.1:5000/next_nonce/' + sender)).text()
         console.log(nonce);
         const message = sender + ' ' + to + ' ' + value + ' ' + nonce;
         const d = {
