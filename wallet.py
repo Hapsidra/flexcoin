@@ -6,6 +6,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric import padding
 
 
+# генерация приватного ключа
 def generate_key():
     # Generate private key
     key = rsa.generate_private_key(
@@ -24,7 +25,7 @@ def generate_key():
         f.write(public_key_to_pem(key))
     return key
 
-
+# проверка файла на существование
 def exist_file(filename):
     try:
         with open(filename, "rb") as f:
@@ -34,6 +35,7 @@ def exist_file(filename):
         return False
 
 
+# сериализация приватного ключа
 def encode_private(ps: str):
     private_key = serialization.load_pem_private_key(
         ps.encode('utf-8'),
@@ -42,7 +44,7 @@ def encode_private(ps: str):
     )
     return private_key
 
-
+# чтение приватного ключа из файла
 def read_key(filename):
     with open(filename, "rb") as key_file:
         private_key = serialization.load_pem_private_key(
@@ -53,6 +55,7 @@ def read_key(filename):
     return private_key
 
 
+# чтение либо создание приватного ключа
 def get_private_key():
     if not exist_file("private_key.pem"):
         key = generate_key()
@@ -61,14 +64,17 @@ def get_private_key():
     return key
 
 
+# преобразование байтов в строку
 def bytes_to_hex(s):
     return s.hex()
 
 
+# преобразование строки в байты
 def hex_to_bytes(s):
     return bytes(bytearray.fromhex(s))
 
 
+# получение публичного ключа в формате PEM
 def public_key_to_pem(private_key):
     public_key = private_key.public_key()
     pem = public_key.public_bytes(
@@ -78,6 +84,7 @@ def public_key_to_pem(private_key):
     return bytes_to_hex(pem)
 
 
+# получение объекта публичного ключа из строки формата PEM
 def pem_to_public_key(_pem):
     pem = hex_to_bytes(_pem)
     public_key = serialization.load_pem_public_key(
@@ -87,6 +94,7 @@ def pem_to_public_key(_pem):
     return public_key
 
 
+# функция подписи строки
 def sign(private_key, _message):
     message = _message.encode('utf-8')
     signature = private_key.sign(
@@ -100,6 +108,7 @@ def sign(private_key, _message):
     return bytes_to_hex(signature)
 
 
+# функция верификации строки
 def verify(public_key, _message, _signature):
     message = _message.encode('utf-8')
     signature = hex_to_bytes(_signature)
