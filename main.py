@@ -40,7 +40,7 @@ class Server(threading.Thread):
 
         @app.route('/new_block', methods=['POST'])
         def new_block():
-            print('req:', req)
+            print('получен новый блок:', req)
             block_json = json.loads(json.loads(req.data))
             add_block(Block.from_dict(block_json))
             return 'ok'
@@ -75,6 +75,7 @@ class Miner(threading.Thread):
             current_block = chain[current_block_hash]
             block = Block(my_address, current_block_hash, transactions_pool, current_block.length + 1)
             Miner.mine(block)
+            print('Замейнен новый блок')
             add_block(block)
 
 
