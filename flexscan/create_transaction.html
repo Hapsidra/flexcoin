@@ -48,7 +48,7 @@
             <input type="text" class="form-control" id="signature" name="signature">
             <div class="mt-4">
                 <button type="button" class="btn btn-primary" onclick="signatureHelper()">Sign</button>
-                <input type="submit" class="btn btn-outline-primary ml-1" value="Create">
+                <input id="submit-btn" type="submit" class="btn btn-outline-primary ml-1" value="Create" disabled>
             </div>
         </div>
     </form>
@@ -63,6 +63,7 @@
         var s3 = $('#value').val();
         var s4 = $('#nonce').val();
         document.getElementById('signatureHelper').innerText = s1 + ' ' + s2 + ' ' + s3 + ' ' + s4;
+        $('#submit-btn').removeAttr("disabled");
     }
 </script>
 </body>
