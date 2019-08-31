@@ -1,15 +1,16 @@
-from flask import Flask, request as req, jsonify, after_this_request
+# coding=utf-8
+from flask import Flask, request as req
 import requests
-from wallet import verify, get_private_key, public_key_to_pem, sign, encode_private
+from crypto import verify, get_private_key, public_key_to_pem, sign
 from models import *
 import threading
-# Сложность сети
+import socket
+from flask_cors import CORS
 DIFFICULTY = 5
-# Награда майнеру
 MINER_REWARD = 25
+PORT = 5000
 
 
-# Сервер который отвечает за API
 class Server(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -17,106 +18,41 @@ class Server(threading.Thread):
     @staticmethod
     def create_server():
         app = Flask(__name__)
+        CORS(app)
 
         @app.route('/')
         def hello_world():
             return 'flexcoin'
 
-        # API для создания подписи
-        @app.route('/sign', methods=['POST'])
-        def d_sign():
-            @after_this_request
-            def add_header(resp):
-                resp.headers['Access-Control-Allow-Origin'] = '*'
-                return resp
-            print(req.data)
-            d = json.loads(req.data)
-            print(d)
-            print(type(d))
-            k = d['key']
-            print(k)
-            pk = encode_private(k)
-            message = d['message']
-            return sign(pk, message)
-
-        # возравщает текущую цепь
-        @app.route('/sorted_chain')
-        def sorted_chain():
-            @after_this_request
-            def add_header(resp):
-                resp.headers['Access-Control-Allow-Origin'] = '*'
-                return resp
-            return jsonify(get_current_chain())
-
-        # получить состояние пользователя, баланс и нонс
-        @app.route('/user_state/<address>')
-        def get_user_state(address):
-            @after_this_request
-            def add_header(response):
-                response.headers['Access-Control-Allow-Origin'] = '*'
-                return response
-
-            state = get_state(address)
-            return jsonify(state.__dict__)
-
-        @app.route('/next_nonce/<address>')
-        def get_next_nonce(address):
-            @after_this_request
-            def add_header(response):
-                response.headers['Access-Control-Allow-Origin'] = '*'
-                return response
-            return str(next_nonce(address))
-
-        # получить всю цепочку
         @app.route('/chain')
         def get_chain():
-            @after_this_request
-            def add_header(response):
-                response.headers['Access-Control-Allow-Origin'] = '*'
-                return response
-
             return json.dumps(chain, default=lambda o: o.__dict__)
 
-        # создание нового блока
+        @app.route('/pool')
+        def get_pool():
+            return json.dumps(transactions_pool, default=lambda o: o.__dict__)
+
         @app.route('/new_block', methods=['POST'])
         def new_block():
             print('получен новый блок:', req)
             block_json = json.loads(req.data)
-            if isinstance(block_json, str):
-                block_json = json.loads(block_json)
             add_block(Block.from_dict(block_json))
             return 'ok'
 
-        # создание новой транзакции
         @app.route('/new_transaction', methods=['POST'])
         def new_transaction():
-            @after_this_request
-            def add_header(response):
-                response.headers['Access-Control-Allow-Origin'] = '*'
-                return response
             print('получена новая транзакция:', req)
             t_json = json.loads(req.data)
-            if isinstance(t_json, str):
-                t_json = json.loads(t_json)
-            print(t_json)
-            print(type(t_json))
-            print(req.data)
             if add_transaction(Transaction.from_dict(t_json)):
                 return 'ok'
             return 'fail'
 
-        @app.route('/register_node/<node>')
-        def register_node(node):
-            nodes.append(node)
-            return 'ok'
-
         return app
 
     def run(self) -> None:
-        Server.create_server().run(my_host)
+        Server.create_server().run(host=my_host, port=PORT)
 
 
-# Класс майнера
 class Miner(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -134,17 +70,19 @@ class Miner(threading.Thread):
             current_block = chain[current_block_hash]
             block = Block(my_address, current_block_hash, transactions_pool, current_block.length + 1)
             Miner.mine(block)
-            print('Замейнен новый блок')
+            print('Замайнен новый блок')
             add_block(block)
 
 
-my_host = open('host.txt', 'r').readline().strip()
+my_host = socket.gethostbyname(socket.gethostname())
 transactions_pool: [Transaction] = []
-nodes: [str] = ['192.168.0.1', '192.168.0.2']
+nodes: [str] = []
 chain = dict()
 private_key = get_private_key()
 my_address = public_key_to_pem(private_key)
-current_block_hash = None
+genesis = Block('', '', [], 1, 25814)
+chain[genesis.get_hash()] = genesis
+current_block_hash = genesis.get_hash()
 
 
 def get_current_chain():
@@ -158,7 +96,6 @@ def get_current_chain():
     return s
 
 
-# проверка транзакции
 def is_valid_transaction(transaction: Transaction) -> bool:
     sender_state = get_state(transaction.sender)
     if sender_state.nonce >= transaction.nonce:
@@ -174,7 +111,6 @@ def is_valid_transaction(transaction: Transaction) -> bool:
     return True
 
 
-# проверка блока
 def is_valid_block(block: Block) -> bool:
     if block.get_hash() in chain:
         print('block already in chain')
@@ -198,7 +134,6 @@ def is_valid_block(block: Block) -> bool:
     return True
 
 
-# добавление транзакции
 def add_transaction(transaction):
     if is_valid_transaction(transaction):
         for t in transactions_pool:
@@ -208,16 +143,14 @@ def add_transaction(transaction):
         print('new transaction:' + json.dumps(transaction, default=lambda o: o.__dict__))
         transactions_pool.append(transaction)
         for node in nodes:
-            if node != my_host:
-                try:
-                    requests.post('http://' + node + ':5000' + '/new_transaction', json=json.dumps(transaction, default=lambda o:o.__dict__))
-                except:
-                    print('node', node, 'is unavailable')
+            try:
+                requests.post('http://' + node + ':' + str(PORT) + '/new_transaction', data=json.dumps(transaction, default=lambda o: o.__dict__))
+            except:
+                print('node', node, 'is unavailable')
         return True
     return False
 
 
-# добавление блока
 def add_block(block):
     global current_block_hash
     global transactions_pool
@@ -228,16 +161,14 @@ def add_block(block):
         print('new block:', block_json)
         transactions_pool = []
         for node in nodes:
-            if node != my_host:
-                try:
-                    requests.post('http://' + node + ':5000' + '/new_block', json=block_json)
-                except:
-                    print('node', node, 'is unavailable')
+            try:
+                requests.post('http://' + node + ':' + str(PORT) + '/new_block', data=block_json)
+            except:
+                print('node', node, 'is unavailable')
     else:
         chain[block.get_hash()] = block
 
 
-# получние стейта юзера
 def get_state(address):
     nonce = 0
     balance = 0
@@ -264,44 +195,37 @@ def next_nonce(address):
     return nonce + 1
 
 
+def add_node(node):
+    global current_block_hash
+    if node != my_host and node not in nodes:
+        try:
+            resp_chain = requests.get('http://' + node + ':' + str(PORT) + '/chain')
+            resp_pool = requests.get('http://' + node + ':' + str(PORT) + '/pool')
+            if resp_chain.ok and resp_pool.ok:
+                pool_json = json.loads(resp_pool.text)
+                for t in pool_json:
+                    transactions_pool.append(Transaction.from_dict(t))
+                chain_json = resp_chain.json()
+                for block_hash in chain_json:
+                    block_json = chain_json[block_hash]
+                    block = Block.from_dict(block_json)
+                    chain[block_hash] = block
+                    if block.length > chain[current_block_hash].length:
+                        current_block_hash = block.get_hash()
+            nodes.append(node)
+            print('Получен чейн')
+        except:
+            print('node ' + node + ' is unavailable')
+
+
 def main():
     print('your address:', my_address)
     server = Server()
     server.start()
-    global current_block_hash
 
-    # восстановление цепочки
-    for node in nodes:
-        if node != my_host:
-            try:
-                resp = requests.get('http://' + node + ':5000/chain')
-                if resp.ok:
-                    chain_json = resp.json()
-                    for block_hash in chain_json:
-                        block_json = chain_json[block_hash]
-                        block = Block.from_dict(block_json)
-                        chain[block_hash] = block
-                        if current_block_hash is None or block.length > chain[current_block_hash].length:
-                            current_block_hash = block.get_hash()
-                print('Получен чейн')
-            except:
-                print('node ' + node + ' is unavailable')
-    # если цепочка пуста создать генезис блок
-    if len(chain) == 0:
-        print('Создан генезис')
-        genesis = Block('', '', [], 1, 25814)
-        chain[genesis.get_hash()] = genesis
-        current_block_hash = genesis.get_hash()
-    print(json.dumps(chain, default=lambda o: o.__dict__))
-    print('Хеш последнего:', current_block_hash)
-    # запуск CLI
     while True:
         cmd = input()
-        if cmd == 'sign':
-            message = input('enter message: ')
-            signature = sign(private_key, message)
-            print(signature)
-        elif cmd == 'mine':
+        if cmd == 'mine':
             print('mining...')
             Miner().start()
         elif cmd == 'balance':
@@ -315,6 +239,11 @@ def main():
             m = my_address + ' ' + to + ' ' + str(value) + ' ' + str(n)
             if add_transaction(Transaction(my_address, to, value, n, sign(private_key, m))):
                 print('success')
+        elif cmd == 'nodes':
+            print(nodes)
+        elif cmd == 'node':
+            node = input('ip: ')
+            add_node(node)
         elif cmd == 'pool':
             print(json.dumps(transactions_pool, default=lambda o: o.__dict__))
         else:
